@@ -20,17 +20,17 @@ templates/            # Plantillas HTML
 ## Requisitos
 - Python 3.10+
 - Flask
-- pymongo
+- flask_mongoengine
 
 ## Instalación
 1. Clona el repositorio:
    ```sh
-   git clone <url-del-repositorio>
-   cd peliculas_flask_mongo
+   git clone git@github.com:maubry-ortega/Flask_peliculas_ODM_mongo.git
+   cd Flask_peliculas_ODM_mongo
    ```
 2. Instala las dependencias:
    ```sh
-   pip install flask pymongo
+   pip install flask git+https://github.com/idoshr/flask-mongoengine.git@1.0.1 
    ```
 3. Asegúrate de tener MongoDB en ejecución.
 

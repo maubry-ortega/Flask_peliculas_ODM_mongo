@@ -71,11 +71,11 @@ def update_pelicula():
 def delete_pelicula(id):
     try:
         mensaje = None
-        estado = False
+        estado  = False
         pelicula = Pelicula.objects(id=ObjectId(id)).first()
         if pelicula is not None:
             pelicula.delete()
-            estado = True
+            estado  = True
             mensaje = 'Pelicula eliminada correctamente'
         else:
             mensaje = 'Pelicula no existe'
@@ -83,3 +83,17 @@ def delete_pelicula(id):
         mensaje = str(e)
         
     return {'estado': estado, 'mensaje': mensaje}
+
+@app.route('/pelicula/<id>', methods=['GET'])
+def get_pelicula(id):
+    try:
+        mensaje = None
+        pelicula = Pelicula.objects(id=ObjectId(id)).first()
+        if pelicula is not None:
+            mensaje = 'Pelicula encontrada'
+        else:
+            mensaje = 'Pelicula no existe'
+    except Exception as e:
+        mensaje = str(e)
+        
+    return {'mensaje': mensaje, 'pelicula': pelicula}, 200

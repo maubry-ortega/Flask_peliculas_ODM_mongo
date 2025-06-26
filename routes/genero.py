@@ -18,10 +18,10 @@ def add_genero():
         mensaje = None
         estado = False
         if request.method == 'POST':
-            datos = request.get_json(force=True)
+            datos  = request.get_json(force=True)
             genero = Genero(**datos)
             genero.save()
-            estado = True
+            estado  = True
             mensaje = 'Genero creado correctamente'
         else:
             mensaje = 'Metodo no permitido'

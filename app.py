@@ -1,13 +1,17 @@
 from flask import Flask, request, jsonify
 from flask_mongoengine import MongoEngine
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = Flask(__name__)
 
 app.config['UPLOAD_FOLDER'] = './static/img'
 app.config['MONGODB_SETTINGS'] = {
     'db' : 'peliculas',
-    'host': 'localhost',
-    'port': 27017
+    'host': os.environ.get('URI'),
+    #'port': 27017
     }
 
 db = MongoEngine(app)
