@@ -30,7 +30,7 @@ templates/            # Plantillas HTML
    ```
 2. Instala las dependencias:
    ```sh
-   pip install flask git+https://github.com/idoshr/flask-mongoengine.git@1.0.1 
+   pip install -r requirements.txt
    ```
 3. Asegúrate de tener MongoDB en ejecución.
 
