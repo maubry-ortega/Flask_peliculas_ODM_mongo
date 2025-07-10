@@ -1,177 +1,235 @@
-// VolleyDevByMaubry [8/∞]
 let idActual = null;
+let generoActual = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const path = window.location.pathname;
+
+  if (path.includes("/pelicula")) {
     await cargarPeliculas();
     await cargarGeneros();
-    configurarEventos();
-    configurarPreviewImagen();
+    document.getElementById("formNuevaPelicula").addEventListener("submit", guardarPelicula);
+    document.getElementById("fotoInput").addEventListener("input", previewFoto);
+  }
+
+  if (path.includes("/genero")) {
+    await cargarGenerosTabla();
+    document.getElementById("formGenero").addEventListener("submit", guardarGenero);
+  }
+
+  const cerrar = document.getElementById("cerrarSesion");
+  if (cerrar) cerrar.addEventListener("click", async () => {
+    await fetch("/auth/logout");
+    location.href = "/";
+  });
 });
 
-function configurarEventos() {
-    const btnCerrar = document.getElementById("cerrarSesion");
-    if (btnCerrar) {
-        btnCerrar.addEventListener("click", async () => {
-            await fetch("/auth/logout");
-            location.href = "/";
-        });
-    }
-
-    const form = document.getElementById("formNuevaPelicula");
-    if (form) {
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const datos = await obtenerDatosFormulario(form);
-            const metodo = idActual ? "PUT" : "POST";
-            const url = idActual ? `/pelicula/${idActual}` : "/pelicula/";
-
-            try {
-                const res = await fetch(url, {
-                    method: metodo,
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(datos)
-                });
-
-                if (!res.ok) throw new Error(await res.text());
-
-                const json = await res.json();
-                alert(json.mensaje);
-                document.querySelector('[data-modal-hide="modalNuevaPelicula"]').click();
-                await cargarPeliculas();
-                form.reset();
-                document.getElementById("previewFoto").classList.add("hidden");
-                idActual = null;
-            } catch (err) {
-                alert("Error: " + err.message);
-            }
-        });
-    }
-}
-
-async function obtenerDatosFormulario(form) {
-    const formData = new FormData(form);
-    const datos = Object.fromEntries(formData.entries());
-
-    datos.codigo = parseInt(datos.codigo);
-    datos.duracion = parseInt(datos.duracion);
-
-    const archivo = form.foto?.files?.[0];
-    if (archivo) {
-        datos.foto = await toBase64(archivo);
-    }
-
-    return datos;
-}
-
-function configurarPreviewImagen() {
-    const input = document.getElementById("inputFoto");
-    const preview = document.getElementById("previewFoto");
-
-    if (input && preview) {
-        input.addEventListener("change", () => {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = e => {
-                preview.src = e.target.result;
-                preview.classList.remove("hidden");
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-}
-
-async function toBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = err => reject(err);
-    });
-}
-
+/* ─────── CRUD PELÍCULAS ─────── */
 async function cargarPeliculas() {
-    const res = await fetch("/pelicula/");
-    const peliculas = await res.json();
-    const tbody = document.querySelector("#tablaPeliculas tbody");
-    tbody.innerHTML = "";
+  const res = await fetch("/pelicula/");
+  const peliculas = await res.json();
+  const tbody = document.querySelector("#tablaPeliculas tbody");
+  tbody.innerHTML = "";
 
-    peliculas.forEach(p => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${p.codigo}</td>
-            <td>${p.titulo}</td>
-            <td>${p.protagonista}</td>
-            <td>${p.duracion}</td>
-            <td>${p.resumen}</td>
-            <td>${p.genero.nombre}</td>
-            <td>
-                ${p.foto ? `<img src="${p.foto}" class="w-16 h-16 object-cover rounded" />` : "N/A"}
-            </td>
-            <td>
-                <button class="text-yellow-500" onclick="editarPelicula('${p.id}')">✏️</button>
-                <button class="text-red-500 ml-2" onclick="eliminarPelicula('${p.id}')">🗑️</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-
-    if (!$.fn.DataTable.isDataTable('#tablaPeliculas')) {
-        $('#tablaPeliculas').DataTable();
-    }
+  peliculas.forEach(p => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${p.codigo}</td>
+      <td>${p.titulo}</td>
+      <td>${p.protagonista}</td>
+      <td>${p.duracion}</td>
+      <td>${p.resumen}</td>
+      <td>${p.genero.nombre}</td>
+      <td><img src="${p.foto || ''}" class="preview"></td>
+      <td>
+        <button onclick="editarPelicula('${p.id}')" class="btn-primary">✏️</button>
+        <button onclick="eliminarPelicula('${p.id}')" class="btn-danger">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
 }
 
 async function cargarGeneros() {
-    const res = await fetch("/genero/");
-    const generos = await res.json();
-    const select = document.getElementById("selectGeneros");
-    select.innerHTML = `<option value="" disabled selected>Seleccione un género...</option>`;
-    generos.forEach(g => {
-        const option = document.createElement("option");
-        option.value = g.id;
-        option.textContent = g.nombre;
-        select.appendChild(option);
+  const res = await fetch("/genero/");
+  const generos = await res.json();
+  const select = document.getElementById("selectGeneros");
+  if (!select) return;
+  select.innerHTML = `<option value="" disabled selected>Seleccione un género...</option>`;
+  generos.forEach(g => {
+    const option = document.createElement("option");
+    option.value = g.id;
+    option.textContent = g.nombre;
+    select.appendChild(option);
+  });
+}
+
+async function guardarPelicula(e) {
+  e.preventDefault();
+  const form = e.target;
+  const datos = Object.fromEntries(new FormData(form));
+  datos.codigo = parseInt(datos.codigo);
+  datos.duracion = parseInt(datos.duracion);
+
+  const url = idActual ? `/pelicula/${idActual}` : "/pelicula/";
+  const metodo = idActual ? "PUT" : "POST";
+
+  try {
+    const res = await fetch(url, {
+      method: metodo,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos)
     });
+
+    if (!res.ok) throw new Error(await res.text());
+    const json = await res.json();
+    alert(json.mensaje);
+
+    cerrarModal();
+    await cargarPeliculas();
+    form.reset();
+    idActual = null;
+    document.getElementById("previewFoto").classList.add("hidden");
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
 }
 
 async function eliminarPelicula(id) {
-    if (!confirm("¿Deseas eliminar esta película?")) return;
-    const res = await fetch(`/pelicula/${id}`, { method: "DELETE" });
-    const json = await res.json();
-    alert(json.mensaje);
-    await cargarPeliculas();
+  if (!confirm("¿Eliminar esta película?")) return;
+  const res = await fetch(`/pelicula/${id}`, { method: "DELETE" });
+  const json = await res.json();
+  alert(json.mensaje);
+  await cargarPeliculas();
 }
 
 async function editarPelicula(id) {
-    const res = await fetch("/pelicula/");
-    const peliculas = await res.json();
-    const p = peliculas.find(p => p.id === id);
-    if (!p) return alert("Película no encontrada");
+  const res = await fetch("/pelicula/");
+  const peliculas = await res.json();
+  const p = peliculas.find(p => p.id === id);
+  if (!p) return alert("Película no encontrada");
 
-    const form = document.getElementById("formNuevaPelicula");
-    form.codigo.value = p.codigo;
-    form.titulo.value = p.titulo;
-    form.protagonista.value = p.protagonista;
-    form.duracion.value = p.duracion;
-    form.resumen.value = p.resumen;
-    form.genero.value = p.genero.id;
+  const form = document.getElementById("formNuevaPelicula");
+  form.codigo.value = p.codigo;
+  form.titulo.value = p.titulo;
+  form.protagonista.value = p.protagonista;
+  form.duracion.value = p.duracion;
+  form.resumen.value = p.resumen;
+  form.genero.value = p.genero.id;
+  form.foto.value = p.foto || "";
+  const img = document.getElementById("previewFoto");
+  img.src = p.foto || "";
+  img.classList.remove("hidden");
 
-    if (p.foto) {
-        const preview = document.getElementById("previewFoto");
-        preview.src = p.foto;
-        preview.classList.remove("hidden");
+  idActual = id;
+  abrirModal();
+}
+
+function previewFoto(e) {
+  const url = e.target.value.trim();
+  const img = document.getElementById("previewFoto");
+  if (url) {
+    img.src = url;
+    img.classList.remove("hidden");
+  } else {
+    img.classList.add("hidden");
+  }
+}
+
+function abrirModal() {
+  document.getElementById("modalBackdrop").classList.add("show");
+}
+function cerrarModal() {
+  document.getElementById("modalBackdrop").classList.remove("show");
+}
+
+/* ─────── CRUD GÉNEROS ─────── */
+async function cargarGenerosTabla() {
+  const res = await fetch("/genero/");
+  const generos = await res.json();
+  const tbody = document.querySelector("#tablaGeneros tbody");
+  tbody.innerHTML = "";
+
+  generos.forEach(g => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${g.nombre}</td>
+      <td>
+        <button onclick="editarGenero('${g.id}')" class="btn-primary">✏️</button>
+        <button onclick="eliminarGenero('${g.id}')" class="btn-danger">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+async function guardarGenero(e) {
+  e.preventDefault();
+  const form = e.target;
+  const datos = Object.fromEntries(new FormData(form));
+  const url = generoActual ? `/genero/${generoActual}` : "/genero/";
+  const metodo = generoActual ? "PUT" : "POST";
+
+  try {
+    const res = await fetch(url, {
+      method: metodo,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos)
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+    const json = await res.json();
+    alert(json.mensaje);
+    form.reset();
+    cerrarModalGenero();
+    await cargarGenerosTabla();
+    generoActual = null;
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+}
+
+async function eliminarGenero(id) {
+  if (!confirm("¿Eliminar este género?")) return;
+  const res = await fetch(`/genero/${id}`, { method: "DELETE" });
+  const json = await res.json();
+  alert(json.mensaje);
+  await cargarGenerosTabla();
+}
+
+async function editarGenero(id) {
+  const res = await fetch("/genero/");
+  const generos = await res.json();
+  const g = generos.find(g => g.id === id);
+  if (!g) return alert("Género no encontrado");
+
+  document.getElementById("formGenero").nombre.value = g.nombre;
+  generoActual = id;
+  abrirModalGenero();
+}
+
+function abrirModalGenero() {
+  document.getElementById("modalGenero").classList.add("show");
+}
+function cerrarModalGenero() {
+  document.getElementById("modalGenero").classList.remove("show");
+}
+
+const formCorreo = document.getElementById("formCorreo");
+if (formCorreo) {
+  formCorreo.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const datos = Object.fromEntries(new FormData(formCorreo));
+    try {
+      const res = await fetch("/correo/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos)
+      });
+      const json = await res.json();
+      alert(json.mensaje);
+      formCorreo.reset();
+    } catch (err) {
+      alert("Error al enviar correo");
     }
-
-    idActual = id;
-
-    const modal = document.getElementById("modalNuevaPelicula");
-
-    // 👇 Fallback si Flowbite no lo inicializó automáticamente
-    if (!window.Flowbite?.instances?.getInstance(modal.id)) {
-        const Modal = window.Modal || (await import('https://unpkg.com/flowbite@2.3.0')).Modal;
-        new Modal(modal).show();
-    } else {
-        const instance = window.Flowbite.instances.getInstance(modal.id);
-        instance.show();
-    }
+  });
 }

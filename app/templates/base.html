@@ -1,25 +1,83 @@
-<!-- VolleyDevByMaubry [7/∞] -->
+<!-- VolleyDevByMaubry [18/∞] -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>{% block title %}Gestión de Películas{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- DataTables -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js" defer></script>
-
-    <!-- Flowbite -->
-    <script src="https://unpkg.com/flowbite@2.3.0/dist/flowbite.min.js" defer></script>
+  <meta charset="UTF-8" />
+  <title>{% block title %}App de Películas{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 </head>
-<body class="bg-slate-900 text-white">
+<body>
+  {% include 'partials/header.html' %}
+  {% include 'partials/menu.html' %}
+
+  <main class="app-main">
     {% block content %}{% endblock %}
+  </main>
+
+  {% include 'partials/footer.html' %}
+
+  <!-- Modal Global para Enviar Correo -->
+  <div id="modalCorreo" class="modal-backdrop">
+    <div class="modal-content">
+      <h3>📤 Enviar Correo</h3>
+      <form id="formCorreo" class="formulario">
+        <input name="para" placeholder="Para (correo electrónico)" required>
+        <input name="asunto" placeholder="Asunto" required>
+        <textarea name="mensaje" placeholder="Mensaje..." required></textarea>
+
+        <div class="botones">
+          <button type="button" class="btn-secondary" onclick="cerrarModalCorreo()">Cancelar</button>
+          <button type="submit" class="btn-primary">Enviar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function abrirModalCorreo() {
+      document.getElementById("modalCorreo").classList.add("show");
+    }
+
+    function cerrarModalCorreo() {
+      document.getElementById("modalCorreo").classList.remove("show");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("formCorreo");
+      let enviando = false;
+
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (enviando) return;
+        enviando = true;
+
+        const datos = Object.fromEntries(new FormData(form));
+        const btn = form.querySelector("button[type='submit']");
+        btn.disabled = true;
+        btn.textContent = "Enviando...";
+
+        cerrarModalCorreo();
+
+        try {
+          const res = await fetch("/correo/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos)
+          });
+
+          const json = await res.json();
+          alert(json.mensaje);
+          form.reset();
+        } catch (err) {
+          alert("Error al enviar el correo");
+        } finally {
+          enviando = false;
+          btn.disabled = false;
+          btn.textContent = "Enviar";
+        }
+      });
+    });
+  </script>
 </body>
 </html>

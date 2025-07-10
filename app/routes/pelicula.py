@@ -1,5 +1,5 @@
 # VolleyDevByMaubry [6/∞]
-from flask import Blueprint, request, session, jsonify
+from flask import Blueprint, request, session, jsonify, render_template, redirect
 from bson import ObjectId
 from app.models.pelicula import Pelicula
 from app.models.genero import Genero
@@ -9,17 +9,24 @@ pelicula_bp = Blueprint("pelicula", __name__, url_prefix="/pelicula")
 @pelicula_bp.before_request
 def sede():
     if "usuario" not in session:
-        return jsonify({"mensaje": "No autorizado"}), 401
+        return jsonify({"mensaje": "No autorizado"}), 401 if request.path.endswith(".json") else redirect("/")
 
 @pelicula_bp.route("/", methods=["GET"])
 def list_movies():
     arr = []
     for p in Pelicula.objects():
         arr.append({
-            "id": str(p.id), "codigo": p.codigo, "titulo": p.titulo,
-            "protagonista": p.protagonista, "duracion": p.duracion,
-            "resumen": p.resumen, "foto": p.foto,
-            "genero": {"id": str(p.genero.id), "nombre": p.genero.nombre} if p.genero else {"id": "", "nombre": "N/A"}
+            "id": str(p.id),
+            "codigo": p.codigo,
+            "titulo": p.titulo,
+            "protagonista": p.protagonista,
+            "duracion": p.duracion,
+            "resumen": p.resumen,
+            "foto": p.foto,
+            "genero": {
+                "id": str(p.genero.id),
+                "nombre": p.genero.nombre
+            } if p.genero else {"id": "", "nombre": "N/A"}
         })
     return jsonify(arr)
 
@@ -80,3 +87,10 @@ def del_movie(id):
         return jsonify({"mensaje": "No existe"}), 404
     p.delete()
     return jsonify({"mensaje": "Película eliminada"})
+
+# Vista HTML con plantilla
+@pelicula_bp.route("/vista", methods=["GET"])
+def vista_peliculas():
+    if "usuario" not in session:
+        return redirect("/")
+    return render_template("peliculas.html")

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Géneros{% endblock %}
+{% block content %}
+<div class="encabezado">
+  <h1>🎭 Gestión de Géneros</h1>
+  <button onclick="abrirModalGenero()" class="btn-primary">+ Nuevo Género</button>
+</div>
+
+<table id="tablaGeneros">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<!-- Modal de género -->
+<div id="modalGenero" class="modal-backdrop">
+  <div class="modal-content">
+    <h3>🎭 Género</h3>
+    <form id="formGenero" class="formulario">
+      <input name="nombre" placeholder="Nombre del género" required>
+      <div class="botones">
+        <button type="button" class="btn-secondary" onclick="cerrarModalGenero()">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

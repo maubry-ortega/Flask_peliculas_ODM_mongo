@@ -10,7 +10,7 @@ def login():
     user = Usuario.objects(usuario=data["usuario"], password=data["password"]).first()
     if user:
         session["usuario"] = user.usuario
-        return jsonify({"mensaje": "OK"}), 200
+        return jsonify({"redirect": "/home","mensaje": "OK"}), 200
     return jsonify({"mensaje": "Credenciales inválidas"}), 401
 
 @usuario_bp.route("/logout")

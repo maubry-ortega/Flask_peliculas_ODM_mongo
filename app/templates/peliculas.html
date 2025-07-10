@@ -1,15 +1,8 @@
-<!-- VolleyDevByMaubry [10/∞] -->
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
-
+{% block title %}Películas{% endblock %}
 {% block content %}
 <div class="encabezado">
   <h1>🎬 Gestión de Películas</h1>
-  <button id="cerrarSesion" class="btn-danger">Cerrar sesión</button>
-</div>
-
-<div class="acciones">
-  <h2>Películas Registradas</h2>
   <button onclick="abrirModal()" class="btn-primary">+ Nueva Película</button>
 </div>
 
@@ -42,7 +35,6 @@
       <select name="genero" id="selectGeneros" required></select>
       <input name="foto" id="fotoInput" placeholder="Foto (URL)">
       <img id="previewFoto" class="preview hidden" />
-
       <div class="botones">
         <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
         <button type="submit" class="btn-primary">Guardar</button>
@@ -50,6 +42,4 @@
     </form>
   </div>
 </div>
-
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}

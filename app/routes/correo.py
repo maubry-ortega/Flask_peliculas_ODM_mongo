@@ -1,20 +1,32 @@
-# VolleyDevByMaubry [6/∞]
+# VolleyDevByMaubry [13/∞] - Actualizado
 from flask import Blueprint, request, session, jsonify
-import yagmail, os
+import yagmail
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 correo_bp = Blueprint("correo", __name__, url_prefix="/correo")
 
 @correo_bp.before_request
 def sede():
     if "usuario" not in session:
-        return jsonify({"mensaje":"No autorizado"}),401
+        return jsonify({"mensaje": "No autorizado"}), 401
 
-@correo_bp.route("/enviar", methods=["POST"])
-def send():
-    d = request.get_json()
+@correo_bp.route("/", methods=["POST"])
+def enviar():
+    data = request.get_json()
+    to = data.get("para")
+    asunto = data.get("asunto")
+    mensaje = data.get("mensaje")
+
     try:
-        yag = yagmail.SMTP(os.getenv("EMAIL"), os.getenv("EMAIL_PASSWORD"))
-        yag.send(d["destino"], d["asunto"], d["contenido"], attachments=d.get("archivo"))
-        return jsonify({"mensaje":"Correo enviado"})
+        yag = yagmail.SMTP(
+            user=os.getenv("EMAIL"),
+            password=os.getenv("EMAIL_PASSWORD"),
+            host='smtp.gmail.com'
+        )
+        yag.send(to=to, subject=asunto, contents=mensaje)
+        return jsonify({"mensaje": "Correo enviado con éxito"}), 200
     except Exception as e:
-        return jsonify({"mensaje":str(e)}), 500
+        return jsonify({"mensaje": f"Error al enviar: {str(e)}"}), 500

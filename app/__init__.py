@@ -33,6 +33,6 @@ def create_app():
     def home():
         if "usuario" not in session:
             return render_template("login.html")
-        return render_template("index.html")
+        return render_template("home.html")
 
     return app
