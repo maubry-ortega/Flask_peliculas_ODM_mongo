@@ -1,11 +1,9 @@
-# VolleyDevByMaubry [13/∞] - Actualizado
+# VolleyDevByMaubry [13/∞] - Validación reCAPTCHA
 from flask import Blueprint, request, session, jsonify
-import yagmail
-import os
+import yagmail, os, requests
 from dotenv import load_dotenv
 
 load_dotenv()
-
 correo_bp = Blueprint("correo", __name__, url_prefix="/correo")
 
 @correo_bp.before_request
@@ -16,6 +14,20 @@ def sede():
 @correo_bp.route("/", methods=["POST"])
 def enviar():
     data = request.get_json()
+    token = data.get("token")
+
+    if not token:
+        return jsonify({"mensaje": "reCAPTCHA requerido"}), 400
+
+    resp = requests.post("https://www.google.com/recaptcha/api/siteverify", data={
+        "secret": os.getenv("RECAPTCHA_SECRET_KEY"),
+        "response": token
+    }).json()
+
+    if not resp.get("success"):
+        return jsonify({"mensaje": "reCAPTCHA inválido"}), 400
+
+    # Email
     to = data.get("para")
     asunto = data.get("asunto")
     mensaje = data.get("mensaje")

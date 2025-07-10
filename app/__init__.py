@@ -1,4 +1,3 @@
-# VolleyDevByMaubry [2/∞]
 from flask import Flask, render_template, session
 from flask_mongoengine import MongoEngine
 from flask_cors import CORS
@@ -28,11 +27,11 @@ def create_app():
     app.register_blueprint(pelicula_bp)
     app.register_blueprint(usuario_bp)
     app.register_blueprint(correo_bp)
-
+    
     @app.route("/")
     def home():
         if "usuario" not in session:
-            return render_template("login.html")
+            return render_template("login.html", site_key=os.getenv("RECAPTCHA_SITE_KEY"))
         return render_template("home.html")
 
     return app

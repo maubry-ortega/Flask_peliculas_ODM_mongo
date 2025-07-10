@@ -1,5 +1,6 @@
-# VolleyDevByMaubry [3/∞]
-from flask import Blueprint, request, session, jsonify, redirect
+# VolleyDevByMaubry [26/∞]
+from flask import Blueprint, request, session, jsonify, redirect, url_for
+import requests, os
 from app.models.usuario import Usuario
 
 usuario_bp = Blueprint("usuario", __name__, url_prefix="/auth")
@@ -7,13 +8,31 @@ usuario_bp = Blueprint("usuario", __name__, url_prefix="/auth")
 @usuario_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    user = Usuario.objects(usuario=data["usuario"], password=data["password"]).first()
-    if user:
-        session["usuario"] = user.usuario
-        return jsonify({"redirect": "/home","mensaje": "OK"}), 200
-    return jsonify({"mensaje": "Credenciales inválidas"}), 401
+    usuario = data.get("usuario")
+    password = data.get("password")
+    token = data.get("token")
 
-@usuario_bp.route("/logout")
+    if not token:
+        return jsonify({"mensaje": "reCAPTCHA requerido"}), 400
+
+    # Validar token con Google
+    resp = requests.post("https://www.google.com/recaptcha/api/siteverify", data={
+        "secret": os.getenv("RECAPTCHA_SECRET_KEY"),
+        "response": token
+    }).json()
+
+    if not resp.get("success"):
+        return jsonify({"mensaje": "reCAPTCHA inválido"}), 400
+
+    # Autenticación simple (ajusta a tu modelo real)
+    user = Usuario.objects(usuario=usuario, password=password).first()
+    if not user:
+        return jsonify({"mensaje": "Credenciales inválidas"}), 401
+
+    session["usuario"] = user.usuario
+    return jsonify({"mensaje": "Bienvenido"})
+
+@usuario_bp.route("/logout", methods=["GET"])
 def logout():
     session.pop("usuario", None)
-    return redirect("/")
+    return redirect(url_for("home"))
