@@ -43,3 +43,5 @@ def create_app():
         return render_template("home.html")
 
     return app
+
+app = create_app()
