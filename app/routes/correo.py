@@ -1,9 +1,10 @@
-# VolleyDevByMaubry [13/∞] - Validación reCAPTCHA
+# VolleyDevByMaubry [13/∞] - Validación reCAPTCHA + Envío Yagmail
 from flask import Blueprint, request, session, jsonify
 import yagmail, os, requests
 from dotenv import load_dotenv
 
 load_dotenv()
+
 correo_bp = Blueprint("correo", __name__, url_prefix="/correo")
 
 @correo_bp.before_request
@@ -27,7 +28,6 @@ def enviar():
     if not resp.get("success"):
         return jsonify({"mensaje": "reCAPTCHA inválido"}), 400
 
-    # Email
     to = data.get("para")
     asunto = data.get("asunto")
     mensaje = data.get("mensaje")

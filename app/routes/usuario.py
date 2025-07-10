@@ -36,3 +36,19 @@ def login():
 def logout():
     session.pop("usuario", None)
     return redirect(url_for("home"))
+
+# Ruta temporal para crear usuarios desde el navegador o cliente HTTP
+@usuario_bp.route("/crear", methods=["POST"])
+def crear_usuario():
+    data = request.get_json()
+    try:
+        nuevo = Usuario(
+            usuario=data.get("usuario"),
+            password=data.get("password"),
+            nombre=data.get("nombre"),
+            correo=data.get("correo")
+        )
+        nuevo.save()
+        return jsonify({"mensaje": "Usuario creado"}), 201
+    except Exception as e:
+        return jsonify({"mensaje": f"Error: {str(e)}"}), 400

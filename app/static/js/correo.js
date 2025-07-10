@@ -1,4 +1,3 @@
-// VolleyDevByMaubry [23/∞] - Control de envío de correo con reCAPTCHA
 document.addEventListener("DOMContentLoaded", () => {
   const formCorreo = document.getElementById("formCorreo");
   if (!formCorreo) return;
@@ -20,21 +19,20 @@ document.addEventListener("DOMContentLoaded", () => {
     boton.textContent = "Enviando...";
 
     try {
-      cerrarModalCorreo();
-
       const res = await fetch("/correo/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos),
       });
 
-      if (!res.ok) throw new Error("No se pudo enviar");
+      if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
       alert(json.mensaje);
       formCorreo.reset();
       grecaptcha.reset();
-    } catch {
-      alert("Error al enviar el correo");
+      cerrarModalCorreo();
+    } catch (err) {
+      alert("Error al enviar el correo: " + err.message);
       grecaptcha.reset();
     } finally {
       boton.disabled = false;
@@ -46,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function abrirModalCorreo() {
   document.getElementById("modalCorreo")?.classList.add("show");
 }
+
 function cerrarModalCorreo() {
   document.getElementById("modalCorreo")?.classList.remove("show");
 }
