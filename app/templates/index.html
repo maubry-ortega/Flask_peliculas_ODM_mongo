@@ -1,0 +1,70 @@
+<!-- VolleyDevByMaubry [6/∞] -->
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center p-4 bg-slate-800">
+    <h1 class="text-xl font-bold">🎬 Gestión de Películas</h1>
+    <button id="cerrarSesion" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-4 rounded">Cerrar sesión</button>
+</div>
+
+<div class="p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-semibold">Películas Registradas</h2>
+        <button data-modal-target="modalNuevaPelicula" data-modal-toggle="modalNuevaPelicula"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">+ Nueva Película</button>
+    </div>
+
+    <div class="bg-slate-800 text-white rounded-lg shadow">
+        <table id="tablaPeliculas" class="display w-full">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Título</th>
+                    <th>Protagonista</th>
+                    <th>Duración</th>
+                    <th>Resumen</th>
+                    <th>Género</th>
+                    <th>Foto</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Nueva Película -->
+<div id="modalNuevaPelicula" tabindex="-1" aria-hidden="true"
+    class="hidden fixed top-0 left-0 right-0 z-50 flex justify-center items-center w-full h-full bg-black bg-opacity-50">
+    <div class="bg-slate-800 p-6 rounded-lg w-full max-w-2xl">
+        <h3 class="text-xl font-semibold mb-4 text-white">Nueva Película</h3>
+        <form id="formNuevaPelicula" class="space-y-3">
+            <input name="codigo" placeholder="Código"
+                class="w-full px-4 py-2 rounded bg-slate-700 text-white border border-gray-600 placeholder-gray-400" />
+            <input name="titulo" placeholder="Título"
+                class="w-full px-4 py-2 rounded bg-slate-700 text-white border border-gray-600 placeholder-gray-400" />
+            <input name="protagonista" placeholder="Protagonista"
+                class="w-full px-4 py-2 rounded bg-slate-700 text-white border border-gray-600 placeholder-gray-400" />
+            <input name="duracion" type="number" placeholder="Duración (minutos)"
+                class="w-full px-4 py-2 rounded bg-slate-700 text-white border border-gray-600 placeholder-gray-400" />
+            <textarea name="resumen" placeholder="Resumen"
+                class="w-full px-4 py-2 rounded bg-slate-700 text-white border border-gray-600 placeholder-gray-400"></textarea>
+            <select name="genero" id="selectGeneros"
+                class="w-full px-4 py-2 rounded bg-slate-700 text-white border border-gray-600">
+            </select>
+            <input name="foto" type="file" id="inputFoto" accept="image/*"
+                class="w-full px-4 py-2 rounded bg-slate-700 text-white border border-gray-600" />
+            <img id="previewFoto" class="w-32 h-32 object-cover rounded mt-2 border border-gray-500 hidden" />
+            <div class="flex justify-end space-x-2 pt-4">
+                <button type="button" data-modal-hide="modalNuevaPelicula"
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">Cancelar</button>
+                <button type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+{% endblock %}
