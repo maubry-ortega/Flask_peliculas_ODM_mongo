@@ -1,4 +1,4 @@
-<!-- VolleyDevByMaubry [18/∞] -->
+<!-- VolleyDevByMaubry [21/∞] -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,6 +6,7 @@
   <title>{% block title %}App de Películas{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/correo.js') }}" defer></script>
 </head>
 <body>
   {% include 'partials/header.html' %}
@@ -17,7 +18,7 @@
 
   {% include 'partials/footer.html' %}
 
-  <!-- Modal Global para Enviar Correo -->
+  <!-- Modal global -->
   <div id="modalCorreo" class="modal-backdrop">
     <div class="modal-content">
       <h3>📤 Enviar Correo</h3>
@@ -33,51 +34,5 @@
       </form>
     </div>
   </div>
-
-  <script>
-    function abrirModalCorreo() {
-      document.getElementById("modalCorreo").classList.add("show");
-    }
-
-    function cerrarModalCorreo() {
-      document.getElementById("modalCorreo").classList.remove("show");
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const form = document.getElementById("formCorreo");
-      let enviando = false;
-
-      form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        if (enviando) return;
-        enviando = true;
-
-        const datos = Object.fromEntries(new FormData(form));
-        const btn = form.querySelector("button[type='submit']");
-        btn.disabled = true;
-        btn.textContent = "Enviando...";
-
-        cerrarModalCorreo();
-
-        try {
-          const res = await fetch("/correo/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datos)
-          });
-
-          const json = await res.json();
-          alert(json.mensaje);
-          form.reset();
-        } catch (err) {
-          alert("Error al enviar el correo");
-        } finally {
-          enviando = false;
-          btn.disabled = false;
-          btn.textContent = "Enviar";
-        }
-      });
-    });
-  </script>
 </body>
 </html>

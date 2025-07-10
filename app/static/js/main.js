@@ -1,3 +1,5 @@
+// VolleyDevByMaubry [24/∞] — CRUD de Películas y Géneros
+
 let idActual = null;
 let generoActual = null;
 
@@ -23,13 +25,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
-/* ─────── CRUD PELÍCULAS ─────── */
+/* CRUD PELICULAS */
 async function cargarPeliculas() {
   const res = await fetch("/pelicula/");
   const peliculas = await res.json();
   const tbody = document.querySelector("#tablaPeliculas tbody");
   tbody.innerHTML = "";
-
   peliculas.forEach(p => {
     const row = document.createElement("tr");
     row.innerHTML = `
@@ -53,14 +54,15 @@ async function cargarGeneros() {
   const res = await fetch("/genero/");
   const generos = await res.json();
   const select = document.getElementById("selectGeneros");
-  if (!select) return;
-  select.innerHTML = `<option value="" disabled selected>Seleccione un género...</option>`;
-  generos.forEach(g => {
-    const option = document.createElement("option");
-    option.value = g.id;
-    option.textContent = g.nombre;
-    select.appendChild(option);
-  });
+  if (select) {
+    select.innerHTML = `<option value="" disabled selected>Seleccione un género...</option>`;
+    generos.forEach(g => {
+      const option = document.createElement("option");
+      option.value = g.id;
+      option.textContent = g.nombre;
+      select.appendChild(option);
+    });
+  }
 }
 
 async function guardarPelicula(e) {
@@ -83,7 +85,6 @@ async function guardarPelicula(e) {
     if (!res.ok) throw new Error(await res.text());
     const json = await res.json();
     alert(json.mensaje);
-
     cerrarModal();
     await cargarPeliculas();
     form.reset();
@@ -107,7 +108,6 @@ async function editarPelicula(id) {
   const peliculas = await res.json();
   const p = peliculas.find(p => p.id === id);
   if (!p) return alert("Película no encontrada");
-
   const form = document.getElementById("formNuevaPelicula");
   form.codigo.value = p.codigo;
   form.titulo.value = p.titulo;
@@ -116,10 +116,8 @@ async function editarPelicula(id) {
   form.resumen.value = p.resumen;
   form.genero.value = p.genero.id;
   form.foto.value = p.foto || "";
-  const img = document.getElementById("previewFoto");
-  img.src = p.foto || "";
-  img.classList.remove("hidden");
-
+  document.getElementById("previewFoto").src = p.foto || "";
+  document.getElementById("previewFoto").classList.remove("hidden");
   idActual = id;
   abrirModal();
 }
@@ -142,13 +140,12 @@ function cerrarModal() {
   document.getElementById("modalBackdrop").classList.remove("show");
 }
 
-/* ─────── CRUD GÉNEROS ─────── */
+/* CRUD GENEROS */
 async function cargarGenerosTabla() {
   const res = await fetch("/genero/");
   const generos = await res.json();
   const tbody = document.querySelector("#tablaGeneros tbody");
   tbody.innerHTML = "";
-
   generos.forEach(g => {
     const row = document.createElement("tr");
     row.innerHTML = `
@@ -201,7 +198,6 @@ async function editarGenero(id) {
   const generos = await res.json();
   const g = generos.find(g => g.id === id);
   if (!g) return alert("Género no encontrado");
-
   document.getElementById("formGenero").nombre.value = g.nombre;
   generoActual = id;
   abrirModalGenero();
@@ -212,24 +208,4 @@ function abrirModalGenero() {
 }
 function cerrarModalGenero() {
   document.getElementById("modalGenero").classList.remove("show");
-}
-
-const formCorreo = document.getElementById("formCorreo");
-if (formCorreo) {
-  formCorreo.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const datos = Object.fromEntries(new FormData(formCorreo));
-    try {
-      const res = await fetch("/correo/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos)
-      });
-      const json = await res.json();
-      alert(json.mensaje);
-      formCorreo.reset();
-    } catch (err) {
-      alert("Error al enviar correo");
-    }
-  });
 }
