@@ -1,5 +1,3 @@
-// VolleyDevByMaubry [24/∞] — CRUD de Películas y Géneros
-
 let idActual = null;
 let generoActual = null;
 

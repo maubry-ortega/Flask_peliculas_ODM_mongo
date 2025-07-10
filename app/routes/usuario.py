@@ -1,4 +1,3 @@
-# VolleyDevByMaubry [26/∞]
 from flask import Blueprint, request, session, jsonify, redirect, url_for
 import requests, os
 from app.models.usuario import Usuario
@@ -24,7 +23,7 @@ def login():
     if not resp.get("success"):
         return jsonify({"mensaje": "reCAPTCHA inválido"}), 400
 
-    # Autenticación simple (ajusta a tu modelo real)
+    # Autenticación simple
     user = Usuario.objects(usuario=usuario, password=password).first()
     if not user:
         return jsonify({"mensaje": "Credenciales inválidas"}), 401

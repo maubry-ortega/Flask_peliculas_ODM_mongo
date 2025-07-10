@@ -1,4 +1,3 @@
-# VolleyDevByMaubry [4/∞]
 from flask import Blueprint, request, session, jsonify, render_template, redirect
 from app.models.genero import Genero
 

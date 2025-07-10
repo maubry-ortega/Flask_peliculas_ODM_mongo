@@ -1,4 +1,3 @@
-# VolleyDevByMaubry [13/∞] - Validación reCAPTCHA + Envío Yagmail
 from flask import Blueprint, request, session, jsonify
 import yagmail, os, requests
 from dotenv import load_dotenv
