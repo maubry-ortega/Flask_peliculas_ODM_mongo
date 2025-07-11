@@ -21,10 +21,11 @@
   <div id="modalCorreo" class="modal-backdrop">
     <div class="modal-content">
       <h3>📤 Enviar Correo</h3>
-      <form id="formCorreo" class="formulario">
+      <form id="formCorreo" class="formulario" enctype="multipart/form-data">
         <input name="para" placeholder="Para (correo electrónico)" required>
         <input name="asunto" placeholder="Asunto" required>
         <textarea name="mensaje" placeholder="Mensaje..." required></textarea>
+        <input type="file" name="archivo" />
 
         <div class="g-recaptcha mb-2" data-sitekey="{{ site_key }}"></div>
 

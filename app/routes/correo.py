@@ -1,6 +1,9 @@
+import os
 from flask import Blueprint, request, session, jsonify
-import yagmail, os, requests
+import yagmail
+import requests
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
 
 load_dotenv()
 
@@ -13,9 +16,7 @@ def sede():
 
 @correo_bp.route("/", methods=["POST"])
 def enviar():
-    data = request.get_json()
-    token = data.get("token")
-
+    token = request.form.get("token")
     if not token:
         return jsonify({"mensaje": "reCAPTCHA requerido"}), 400
 
@@ -27,9 +28,10 @@ def enviar():
     if not resp.get("success"):
         return jsonify({"mensaje": "reCAPTCHA inválido"}), 400
 
-    to = data.get("para")
-    asunto = data.get("asunto")
-    mensaje = data.get("mensaje")
+    to = request.form.get("para")
+    asunto = request.form.get("asunto")
+    mensaje = request.form.get("mensaje")
+    archivo = request.files.get("archivo")
 
     try:
         yag = yagmail.SMTP(
@@ -37,7 +39,27 @@ def enviar():
             password=os.getenv("EMAIL_PASSWORD"),
             host='smtp.gmail.com'
         )
-        yag.send(to=to, subject=asunto, contents=mensaje)
+
+        adjunto_path = None
+
+        if archivo and archivo.filename:
+            filename = secure_filename(archivo.filename)
+            temp_path = os.path.join("/tmp", filename)  # Para Render, usa /tmp
+
+            archivo.save(temp_path)
+            adjunto_path = temp_path
+
+        yag.send(
+            to=to,
+            subject=asunto,
+            contents=[mensaje],
+            attachments=[adjunto_path] if adjunto_path else None
+        )
+
+        if adjunto_path:
+            os.remove(adjunto_path)
+
         return jsonify({"mensaje": "Correo enviado con éxito"}), 200
+
     except Exception as e:
         return jsonify({"mensaje": f"Error al enviar: {str(e)}"}), 500

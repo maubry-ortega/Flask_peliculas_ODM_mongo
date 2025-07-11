@@ -11,8 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const datos = Object.fromEntries(new FormData(formCorreo));
-    datos.token = token;
+    const formData = new FormData(formCorreo);
+    formData.append("token", token);
 
     const boton = formCorreo.querySelector("button[type='submit']");
     boton.disabled = true;
@@ -21,8 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const res = await fetch("/correo/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos),
+        body: formData
       });
 
       if (!res.ok) throw new Error(await res.text());
