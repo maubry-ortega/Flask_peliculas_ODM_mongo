@@ -1,0 +1,60 @@
+<!-- VolleyDevByMaubry [12/∞] - La gestión comienza con claridad visual. -->
+
+<!-- templates/admin/usuarios.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Usuarios</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <script src="{{ url_for('static', filename='js/admin_user.js') }}" defer></script>
+</head>
+<body class="bg-slate-900 text-white">
+  {% include 'partials/header.html' %}
+  {% include 'partials/menu.html' %}
+
+  <main class="app-main">
+    <div class="encabezado">
+      <h1>👥 Gestión de Usuarios</h1>
+      <button onclick="abrirModalUsuario()" class="btn-primary">+ Nuevo Usuario</button>
+    </div>
+
+    <table id="tablaUsuarios">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th>Nivel</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- Modal Usuario -->
+    <div id="modalUsuario" class="modal-backdrop">
+      <div class="modal-content">
+        <h3>👤 Nuevo Usuario</h3>
+        <form id="formUsuario" class="formulario">
+          <input name="usuario" placeholder="Usuario" required>
+          <input name="password" type="password" placeholder="Contraseña" required>
+          <input name="nombre" placeholder="Nombre Completo" required>
+          <input name="correo" type="email" placeholder="Correo Electrónico" required>
+          <select name="nivel" required>
+            <option value="user">Usuario</option>
+            <option value="admin">Administrador</option>
+          </select>
+
+          <div class="botones">
+            <button type="button" class="btn-secondary" onclick="cerrarModalUsuario()">Cancelar</button>
+            <button type="submit" class="btn-primary">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  {% include 'partials/footer.html' %}
+</body>
+</html>
