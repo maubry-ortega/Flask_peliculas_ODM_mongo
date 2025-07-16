@@ -9,7 +9,7 @@ Descripción:
     - Conexión a MongoDB mediante MongoEngine.
     - Configuración de CORS.
     - Registro de Blueprints.
-    - Inyección de variables globales (como reCAPTCHA).
+    - Inyección de variables globales (como reCAPTCHA y nivel de usuario).
     - Configuración de expiración automática de sesión.
 
 Notas:
@@ -56,21 +56,27 @@ def create_app():
     from app.routes.pelicula import pelicula_bp
     from app.routes.usuario import usuario_bp
     from app.routes.correo import correo_bp
+    from app.routes.admin import admin_bp
 
     app.register_blueprint(genero_bp)
     app.register_blueprint(pelicula_bp)
     app.register_blueprint(usuario_bp)
     app.register_blueprint(correo_bp)
+    app.register_blueprint(admin_bp)
 
     @app.context_processor
-    def inject_site_key():
+    def inject_globals():
         """
-        Inyecta la variable site_key en el contexto de todas las plantillas.
+        Inyecta variables globales en todas las plantillas.
 
         Returns:
-            dict: Diccionario con la clave 'site_key' para reCAPTCHA.
+            dict: Claves para reCAPTCHA y nivel de usuario.
         """
-        return {"site_key": os.getenv("RECAPTCHA_SITE_KEY")}
+        usuario_data = session.get("usuario")
+        return {
+            "site_key": os.getenv("RECAPTCHA_SITE_KEY"),
+            "usuario_nivel": usuario_data.get("nivel") if usuario_data else None
+        }
 
     @app.route("/")
     def home():
@@ -85,5 +91,3 @@ def create_app():
         return render_template("home.html")
 
     return app
-
-app = create_app()

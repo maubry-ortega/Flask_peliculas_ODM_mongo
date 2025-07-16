@@ -93,7 +93,7 @@ def crear_usuario():
         return jsonify({"mensaje": f"Error: {str(e)}"}), 400
 
 
-@usuario_bp.route("/vista_admin", methods=["GET"])
+@usuario_bp.route("/admin/usuarios", methods=["GET"])
 def vista_admin():
     """
     Renderiza una vista solo accesible por administradores.
@@ -105,4 +105,49 @@ def vista_admin():
     if not usuario_data or usuario_data.get("nivel") != "admin":
         return redirect(url_for("home"))
 
-    return render_template("admin.html")
+    return render_template("admin/usuarios.html")
+
+@usuario_bp.route("/admin/usuarios/api", methods=["GET"])
+def obtener_usuarios():
+    """
+    Devuelve todos los usuarios en formato JSON (solo admin).
+    """
+    usuario_data = session.get("usuario")
+    if not usuario_data or usuario_data.get("nivel") != "admin":
+        return jsonify({"mensaje": "No autorizado"}), 403
+
+    usuarios = Usuario.objects().only("usuario", "nombre", "correo", "nivel")
+    data = []
+    for u in usuarios:
+        data.append({
+            "usuario": u.usuario,
+            "nombre": u.nombre,
+            "correo": u.correo,
+            "nivel": u.nivel
+        })
+
+    return jsonify(data), 200
+
+
+@usuario_bp.route("/admin/usuarios/api", methods=["POST"])
+def crear_usuario_admin():
+    """
+    Crea un usuario desde el panel admin.
+    """
+    usuario_data = session.get("usuario")
+    if not usuario_data or usuario_data.get("nivel") != "admin":
+        return jsonify({"mensaje": "No autorizado"}), 403
+
+    data = request.get_json()
+    try:
+        nuevo = Usuario(
+            usuario=data.get("usuario"),
+            password=data.get("password"),
+            nombre=data.get("nombre"),
+            correo=data.get("correo"),
+            nivel=data.get("nivel", "user")
+        )
+        nuevo.save()
+        return jsonify({"mensaje": "Usuario creado"}), 201
+    except Exception as e:
+        return jsonify({"mensaje": f"Error: {str(e)}"}), 400

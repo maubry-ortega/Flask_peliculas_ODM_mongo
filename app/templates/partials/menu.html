@@ -5,7 +5,7 @@
     <li><a href="/pelicula/vista">🎬 Películas</a></li>
     <li><a href="#" onclick="abrirModalCorreo()">📧 Correo</a></li>
 
-    {% if session.usuario_nivel == 'admin' %}
+    {% if usuario_nivel == 'admin' %}
       <li><a href="/admin/usuarios">👤 Usuarios</a></li>
     {% endif %}
 
