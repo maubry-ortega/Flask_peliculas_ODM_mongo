@@ -4,6 +4,11 @@
     <li><a href="/genero/vista">🎭 Géneros</a></li>
     <li><a href="/pelicula/vista">🎬 Películas</a></li>
     <li><a href="#" onclick="abrirModalCorreo()">📧 Correo</a></li>
+
+    {% if session.usuario_nivel == 'admin' %}
+      <li><a href="/admin/usuarios">👤 Usuarios</a></li>
+    {% endif %}
+
     <li><a href="/auth/logout">🚪 Salir</a></li>
   </ul>
 </nav>

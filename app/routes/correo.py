@@ -1,3 +1,21 @@
+# VolleyDevByMaubry [6/∞] - Comunicar es tan importante como construir.
+
+"""
+Archivo: app/routes/correo.py
+Autor: Maubry (VolleyDevByMaubry)
+
+Descripción:
+    Rutas para envío de correos electrónicos con adjuntos mediante Yagmail:
+    - Protegidas por sesión de usuario.
+    - Validación de reCAPTCHA incluida.
+    - Manejo seguro de archivos temporales.
+
+Notas:
+    - El envío solo se realiza si el reCAPTCHA es válido.
+    - Los archivos adjuntos se guardan temporalmente en /tmp.
+    - Utiliza las variables EMAIL y EMAIL_PASSWORD del entorno.
+"""
+
 import os
 from flask import Blueprint, request, session, jsonify
 import yagmail
@@ -9,13 +27,31 @@ load_dotenv()
 
 correo_bp = Blueprint("correo", __name__, url_prefix="/correo")
 
+
 @correo_bp.before_request
-def sede():
+def proteger_sesion():
+    """
+    Middleware que verifica si hay sesión activa.
+    """
     if "usuario" not in session:
         return jsonify({"mensaje": "No autorizado"}), 401
 
+
 @correo_bp.route("/", methods=["POST"])
 def enviar():
+    """
+    Envía un correo electrónico con posible archivo adjunto.
+
+    Datos esperados en request.form:
+        - token: Token de reCAPTCHA (obligatorio).
+        - para: Correo de destino.
+        - asunto: Asunto del correo.
+        - mensaje: Cuerpo del mensaje.
+        - archivo: Archivo adjunto opcional (request.files).
+
+    Returns:
+        dict: Mensaje de éxito o error.
+    """
     token = request.form.get("token")
     if not token:
         return jsonify({"mensaje": "reCAPTCHA requerido"}), 400
@@ -33,6 +69,9 @@ def enviar():
     mensaje = request.form.get("mensaje")
     archivo = request.files.get("archivo")
 
+    if not to or not asunto or not mensaje:
+        return jsonify({"mensaje": "Faltan datos obligatorios"}), 400
+
     try:
         yag = yagmail.SMTP(
             user=os.getenv("EMAIL"),
@@ -41,11 +80,9 @@ def enviar():
         )
 
         adjunto_path = None
-
         if archivo and archivo.filename:
             filename = secure_filename(archivo.filename)
-            temp_path = os.path.join("/tmp", filename)  # Para Render, usa /tmp
-
+            temp_path = os.path.join("/tmp", filename)
             archivo.save(temp_path)
             adjunto_path = temp_path
 

@@ -5,7 +5,10 @@
   <title>{% block title %}App de Películas{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <script>
+    const siteKeyGlobal = "{{ site_key }}";
+  </script>
+  <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaApiLoad&render=explicit" async defer></script>
 </head>
 <body>
   {% include 'partials/header.html' %}
@@ -27,7 +30,7 @@
         <textarea name="mensaje" placeholder="Mensaje..." required></textarea>
         <input type="file" name="archivo" />
 
-        <div class="g-recaptcha mb-2" data-sitekey="{{ site_key }}"></div>
+        <div id="recaptchaContainerCorreo" class="mb-2"></div>
 
         <div class="botones">
           <button type="button" class="btn-secondary" onclick="cerrarModalCorreo()">Cancelar</button>
@@ -38,5 +41,12 @@
   </div>
 
   <script src="{{ url_for('static', filename='js/correo.js') }}"></script>
+
+  <script>
+    let recaptchaCorreoId = null;
+    function onRecaptchaApiLoad() {
+      console.log("reCAPTCHA API cargada");
+    }
+  </script>
 </body>
 </html>

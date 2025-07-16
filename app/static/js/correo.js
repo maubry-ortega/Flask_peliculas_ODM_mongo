@@ -1,3 +1,5 @@
+let recaptchaCorreoId = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   const formCorreo = document.getElementById("formCorreo");
   if (!formCorreo) return;
@@ -5,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   formCorreo.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const token = grecaptcha.getResponse();
+    const token = grecaptcha.getResponse(recaptchaCorreoId);
     if (!token) {
       alert("Confirma el captcha antes de enviar.");
       return;
@@ -28,11 +30,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const json = await res.json();
       alert(json.mensaje);
       formCorreo.reset();
-      grecaptcha.reset();
+      grecaptcha.reset(recaptchaCorreoId);
       cerrarModalCorreo();
     } catch (err) {
       alert("Error al enviar el correo: " + err.message);
-      grecaptcha.reset();
+      grecaptcha.reset(recaptchaCorreoId);
     } finally {
       boton.disabled = false;
       boton.textContent = "Enviar";
@@ -41,7 +43,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function abrirModalCorreo() {
-  document.getElementById("modalCorreo")?.classList.add("show");
+  const modal = document.getElementById("modalCorreo");
+  modal?.classList.add("show");
+
+  if (typeof grecaptcha !== "undefined" && recaptchaCorreoId === null) {
+    recaptchaCorreoId = grecaptcha.render("recaptchaContainerCorreo", {
+      sitekey: siteKeyGlobal
+    });
+  }
 }
 
 function cerrarModalCorreo() {
