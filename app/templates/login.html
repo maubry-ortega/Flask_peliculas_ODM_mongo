@@ -1,44 +1,55 @@
+<!-- VolleyDevByMaubry [13/∞] - La autenticación también merece un estilo propio. -->
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta charset="UTF-8">
   <title>Login</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/icon.ico') }}">
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
-<body class="bg-slate-900 text-white flex items-center justify-center h-screen">
-  <div class="bg-slate-800 p-8 rounded w-full max-w-sm space-y-4">
-    <h2 class="text-2xl font-bold text-center">Iniciar Sesión</h2>
-    <form id="loginForm">
-      <input id="usuario" name="usuario" placeholder="Usuario" class="w-full p-2 bg-slate-700 rounded mb-2" required>
-      <input id="password" name="password" type="password" placeholder="Contraseña" class="w-full p-2 bg-slate-700 rounded mb-2" required>
+<body>
 
-      <div class="g-recaptcha mb-2" data-sitekey="{{ site_key }}"></div>
+  <main class="app-main" style="display: flex; align-items: center; justify-content: center; height: 100vh;">
 
-      <button type="submit" class="w-full bg-indigo-600 py-2 rounded">Entrar</button>
-      <p id="error" class="text-red-400 hidden mt-2">Credenciales inválidas</p>
-    </form>
+    <div style="background: #1e293b; padding: 2rem; border-radius: 1rem; width: 100%; max-width: 400px;">
+      <h2 style="text-align: center; margin-bottom: 1rem;">Iniciar Sesión</h2>
 
-    <button id="abrirSolicitudBtn" class="w-full bg-emerald-600 py-2 rounded">Solicitar Usuario</button>
-  </div>
+      <form id="loginForm" class="formulario">
+        <input id="usuario" name="usuario" placeholder="Usuario" required>
+        <input id="password" name="password" type="password" placeholder="Contraseña" required>
 
-  <!-- Modal Solicitud -->
-  <div id="modalSolicitud" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-50">
-    <div class="bg-slate-800 p-6 rounded w-full max-w-md space-y-4">
-      <h3 class="text-xl font-bold">Solicitar Nuevo Usuario</h3>
-      <form id="solicitudForm" class="space-y-2">
-        <input name="nombre" placeholder="Nombre completo" class="w-full p-2 bg-slate-700 rounded" required>
-        <input name="usuario" placeholder="Usuario deseado" class="w-full p-2 bg-slate-700 rounded" required>
-        <input name="correo" type="email" placeholder="Correo de contacto" class="w-full p-2 bg-slate-700 rounded" required>
-        <textarea name="comentario" placeholder="Comentario (opcional)" class="w-full p-2 bg-slate-700 rounded"></textarea>
+        <div class="g-recaptcha mb-2" data-sitekey="{{ site_key }}"></div>
 
-        <div class="botones flex gap-2">
-          <button type="button" onclick="cerrarModalSolicitud()" class="w-full bg-gray-600 py-2 rounded">Cancelar</button>
-          <button type="submit" class="w-full bg-indigo-600 py-2 rounded">Enviar Solicitud</button>
-        </div>
+        <button type="submit" class="btn-primary" style="width: 100%;">Entrar</button>
+        <p id="error" class="text-red-400 hidden" style="color: red; margin-top: 0.5rem;">Credenciales inválidas</p>
       </form>
+
+      <button id="abrirSolicitudBtn" class="btn-secondary" style="margin-top: 1rem; width: 100%;">Solicitar Usuario</button>
     </div>
-  </div>
+
+    <!-- Modal Solicitud -->
+    <div id="modalSolicitud" class="modal-backdrop">
+      <div class="modal-content">
+        <h3>Solicitar Nuevo Usuario</h3>
+        <form id="solicitudForm" class="formulario">
+          <input name="nombre" placeholder="Nombre completo" required>
+          <input name="usuario" placeholder="Usuario deseado" required>
+          <input name="correo" type="email" placeholder="Correo de contacto" required>
+          <textarea name="comentario" placeholder="Comentario (opcional)"></textarea>
+
+          <div class="botones">
+            <button type="button" onclick="cerrarModalSolicitud()" class="btn-secondary">Cancelar</button>
+            <button type="submit" class="btn-primary">Enviar Solicitud</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </main>
 
   <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+
 </body>
 </html>

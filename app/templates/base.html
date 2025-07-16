@@ -9,6 +9,7 @@
     const siteKeyGlobal = "{{ site_key }}";
   </script>
   <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaApiLoad&render=explicit" async defer></script>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/icon.ico') }}">
 </head>
 <body>
   {% include 'partials/header.html' %}
