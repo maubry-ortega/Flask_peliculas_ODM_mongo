@@ -1,25 +1,25 @@
-# VolleyDevByMaubry [6/∞] - Comunicar es tan importante como construir.
+# VolleyDevByMaubry [10/∞] - La comunicación abre la puerta a nuevos usuarios.
 
 """
 Archivo: app/routes/correo.py
 Autor: Maubry (VolleyDevByMaubry)
 
 Descripción:
-    Rutas para envío de correos electrónicos con adjuntos mediante Yagmail:
-    - Protegidas por sesión de usuario.
-    - Validación de reCAPTCHA incluida.
-    - Manejo seguro de archivos temporales.
+    Rutas para envío de correos electrónicos con adjuntos mediante Yagmail.
+    Incluye:
+        - Envío normal protegido por sesión.
+        - Solicitud de creación de usuario sin sesión.
 
 Notas:
-    - El envío solo se realiza si el reCAPTCHA es válido.
-    - Los archivos adjuntos se guardan temporalmente en /tmp.
-    - Utiliza las variables EMAIL y EMAIL_PASSWORD del entorno.
+    - Validación de reCAPTCHA incluida.
+    - Manejo seguro de archivos temporales.
+    - Variables EMAIL, EMAIL_PASSWORD y ADMIN_EMAIL en el entorno.
 """
 
 import os
-from flask import Blueprint, request, session, jsonify
-import yagmail
 import requests
+import yagmail
+from flask import Blueprint, request, session, jsonify
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 
@@ -27,35 +27,27 @@ load_dotenv()
 
 correo_bp = Blueprint("correo", __name__, url_prefix="/correo")
 
-
 @correo_bp.before_request
 def proteger_sesion():
     """
-    Middleware que verifica si hay sesión activa.
+    Middleware que protege las rutas excepto solicitud_usuario.
     """
+    if request.endpoint == "correo.solicitud_usuario":
+        return  # Libre acceso
     if "usuario" not in session:
         return jsonify({"mensaje": "No autorizado"}), 401
-
 
 @correo_bp.route("/", methods=["POST"])
 def enviar():
     """
-    Envía un correo electrónico con posible archivo adjunto.
-
-    Datos esperados en request.form:
-        - token: Token de reCAPTCHA (obligatorio).
-        - para: Correo de destino.
-        - asunto: Asunto del correo.
-        - mensaje: Cuerpo del mensaje.
-        - archivo: Archivo adjunto opcional (request.files).
-
-    Returns:
-        dict: Mensaje de éxito o error.
+    Ruta para enviar correo normal con posible adjunto.
+    Solo accesible con sesión activa.
     """
     token = request.form.get("token")
     if not token:
         return jsonify({"mensaje": "reCAPTCHA requerido"}), 400
 
+    # Validar reCAPTCHA
     resp = requests.post("https://www.google.com/recaptcha/api/siteverify", data={
         "secret": os.getenv("RECAPTCHA_SECRET_KEY"),
         "response": token
@@ -73,11 +65,7 @@ def enviar():
         return jsonify({"mensaje": "Faltan datos obligatorios"}), 400
 
     try:
-        yag = yagmail.SMTP(
-            user=os.getenv("EMAIL"),
-            password=os.getenv("EMAIL_PASSWORD"),
-            host='smtp.gmail.com'
-        )
+        yag = yagmail.SMTP(user=os.getenv("EMAIL"), password=os.getenv("EMAIL_PASSWORD"))
 
         adjunto_path = None
         if archivo and archivo.filename:
@@ -86,17 +74,38 @@ def enviar():
             archivo.save(temp_path)
             adjunto_path = temp_path
 
-        yag.send(
-            to=to,
-            subject=asunto,
-            contents=[mensaje],
-            attachments=[adjunto_path] if adjunto_path else None
-        )
+        yag.send(to=to, subject=asunto, contents=[mensaje], attachments=[adjunto_path] if adjunto_path else None)
 
         if adjunto_path:
             os.remove(adjunto_path)
 
         return jsonify({"mensaje": "Correo enviado con éxito"}), 200
 
+    except Exception as e:
+        return jsonify({"mensaje": f"Error al enviar: {str(e)}"}), 500
+
+@correo_bp.route("/solicitud", methods=["POST"])
+def solicitud_usuario():
+    """
+    Ruta para recibir solicitudes de nuevo usuario.
+    Accesible sin sesión.
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({"mensaje": "Datos incompletos"}), 400
+
+    nombre = data.get("nombre")
+    usuario = data.get("usuario")
+    correo = data.get("correo")
+    comentario = data.get("comentario")
+
+    if not nombre or not usuario or not correo:
+        return jsonify({"mensaje": "Faltan datos obligatorios"}), 400
+
+    try:
+        yag = yagmail.SMTP(user=os.getenv("EMAIL"), password=os.getenv("EMAIL_PASSWORD"))
+        contenido = f"""Nueva solicitud de usuario:\n\nNombre: {nombre}\nUsuario deseado: {usuario}\nCorreo de contacto: {correo}\nComentario: {comentario or 'Sin comentarios'}\n"""
+        yag.send(to=os.getenv("ADMIN_EMAIL"), subject="Solicitud de nuevo usuario", contents=[contenido])
+        return jsonify({"mensaje": "Solicitud enviada correctamente"}), 200
     except Exception as e:
         return jsonify({"mensaje": f"Error al enviar: {str(e)}"}), 500
