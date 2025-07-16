@@ -10,44 +10,36 @@
   <div class="bg-slate-800 p-8 rounded w-full max-w-sm space-y-4">
     <h2 class="text-2xl font-bold text-center">Iniciar Sesión</h2>
     <form id="loginForm">
-      <input id="usuario" placeholder="Usuario" class="w-full p-2 bg-slate-700 rounded mb-2" required>
-      <input id="password" type="password" placeholder="Contraseña" class="w-full p-2 bg-slate-700 rounded mb-2" required>
+      <input id="usuario" name="usuario" placeholder="Usuario" class="w-full p-2 bg-slate-700 rounded mb-2" required>
+      <input id="password" name="password" type="password" placeholder="Contraseña" class="w-full p-2 bg-slate-700 rounded mb-2" required>
 
       <div class="g-recaptcha mb-2" data-sitekey="{{ site_key }}"></div>
 
       <button type="submit" class="w-full bg-indigo-600 py-2 rounded">Entrar</button>
       <p id="error" class="text-red-400 hidden mt-2">Credenciales inválidas</p>
     </form>
+
+    <button id="abrirSolicitudBtn" class="w-full bg-emerald-600 py-2 rounded">Solicitar Usuario</button>
   </div>
 
-  <script>
-    const form = document.getElementById("loginForm"), err = document.getElementById("error");
-    form.addEventListener("submit", async e => {
-      e.preventDefault();
-      err.classList.add("hidden");
+  <!-- Modal Solicitud -->
+  <div id="modalSolicitud" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-50">
+    <div class="bg-slate-800 p-6 rounded w-full max-w-md space-y-4">
+      <h3 class="text-xl font-bold">Solicitar Nuevo Usuario</h3>
+      <form id="solicitudForm" class="space-y-2">
+        <input name="nombre" placeholder="Nombre completo" class="w-full p-2 bg-slate-700 rounded" required>
+        <input name="usuario" placeholder="Usuario deseado" class="w-full p-2 bg-slate-700 rounded" required>
+        <input name="correo" type="email" placeholder="Correo de contacto" class="w-full p-2 bg-slate-700 rounded" required>
+        <textarea name="comentario" placeholder="Comentario (opcional)" class="w-full p-2 bg-slate-700 rounded"></textarea>
 
-      const token = grecaptcha.getResponse();
-      if (!token) {
-        alert("Completa el reCAPTCHA");
-        return;
-      }
+        <div class="botones flex gap-2">
+          <button type="button" onclick="cerrarModalSolicitud()" class="w-full bg-gray-600 py-2 rounded">Cancelar</button>
+          <button type="submit" class="w-full bg-indigo-600 py-2 rounded">Enviar Solicitud</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-      const usuario = form.usuario.value;
-      const password = form.password.value;
-
-      const res = await fetch("/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuario, password, token })
-      });
-
-      if (res.ok) {
-        window.location = "/";
-      } else {
-        grecaptcha.reset();
-        err.classList.remove("hidden");
-      }
-    });
-  </script>
+  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>
 </html>
